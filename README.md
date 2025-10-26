@@ -6,7 +6,7 @@ iWGPR is a MATLAB code implementing the intrinsic Gaussian Process Regression mo
 - WGPR: [Wrapped Gaussian Process Regression on Riemannian Manifolds](https://openaccess.thecvf.com/content_cvpr_2018/html/Mallasto_Wrapped_Gaussian_Process_CVPR_2018_paper.html)
 
 ## some example cmd commands
-. It includes code examples for two common manifolds, with detailed instructions on specific usage provided in the files spd-example.m and sphere-example.m.
+It includes code examples for two common manifolds, with detailed instructions on specific usage provided in the files spd-example.m and sphere-example.m.
 
 ```
 ### Sphere manifold
