@@ -8,7 +8,9 @@ iGPR is a MATLAB code implementing the intrinsic Gaussian Process Regression mod
 ## some example commands
 It includes code examples for two common manifolds, with detailed instructions on specific usage provided in the files spd-example.m and sphere-example.m.
 
-- Before conducting the experiment, first add the path: Run  and B.
+- Before conducting the experiment, first add the paths: Run
+- [startup.m](https://github.com/xyli432/iGPR/blob/main/gpml-matlab-master/startup.m)  and
+- [add_path.m](https://github.com/xyli432/iGPR/blob/main/gptp_multi_output-master/add_path.m).
 
 ```
 ### Sphere manifold
