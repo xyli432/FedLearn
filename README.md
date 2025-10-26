@@ -64,7 +64,7 @@ clear all;
 rng(1234);
 
 % Define the number of data points to generate
-N = 20;
+N = 100;
 % Specify the dimension of the SPD matrices (2x2 matrices in this case)
 matD = 2;  
 % Initial SPD matrix (starting point for geodesic generation)
