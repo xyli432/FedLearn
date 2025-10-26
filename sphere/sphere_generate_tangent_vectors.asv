@@ -1,0 +1,43 @@
+function [tangent_vectors, time_features] = sphere_generate_tangent_vectors(n, cov_row, cov_col, hyp_init, theta_params, noise_std, generation_type)
+    
+    %  Generate time features
+    time_features = linspace(0, 1, n);
+
+    tangent_vectors = zeros(2, n); 
+    switch lower(generation_type)
+        % Method 1: Generate tangent vectors via Gaussian Process (GP)
+        case 'gp'
+
+            C = feval(cov_row, hyp_init(1), time_features');
+            B = cov_y;
+            [u,s,~] = svd(C); 
+            gn = mvnrnd([0;0],B,n); 
+            z_gp = u*sqrt(s)*gn;
+            varargout(1,:) = reshape(z_gp,1,n);
+            
+
+            y = mv_gptp_sample(cov_col,cov_row,time_features',hyp_init);
+            disp(y);
+            tangent_vectors = reshape(y,2,n);
+
+            tangent_vectors(1,:) = tangent_vectors(1,:) + noise_std * randn(1, n);
+
+            tangent_vectors(2,:) = tangent_vectors(2,:) + noise_std * randn(1, n);
+
+        % Method 2: Generate tangent vectors via analytical function + noise
+        case 'function_plus_noise'
+
+            theta1 = theta_params(1);
+            theta2 = theta_params(2);
+            
+            f1 = @(t) sin(2*pi*theta1*2*t) + 0.3*cos(2*pi*theta1*5*t);
+            tangent_vectors(1, :) = f1(time_features) + noise_std * randn(1, n);
+            
+            f2 = @(t) exp(-t*theta2) + 0.6*sin(2*pi*theta2*3*t);
+            tangent_vectors(2, :) = f2(time_features) + noise_std * randn(1, n);
+            
+        % Handle unsupported generation methods
+        otherwise
+            error('Unsupported generation method, please use ''gp'' or ''function_plus_noise''');
+    end
+end
