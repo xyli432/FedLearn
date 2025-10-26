@@ -117,5 +117,5 @@ disp( spd_geodesic_error(spd_mfd,comparison_pred1,test_y));
 
 ## full examples 
 
-- a full sphere example is in [sphere-example.m ](https://github.com/xyli432/iWGPR/sphere/sphere-example.m )\\
+- a full sphere example is in [sphere-example.m ](https://github.com/xyli432/iWGPR/sphere/sphere-example.m )
 - a full spd example is in [spd-example.m ](https://github.com/xyli432/iWGPR/spd/spd-example.m )
