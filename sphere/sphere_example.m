@@ -75,7 +75,7 @@ for trial = 1:num_trials
     % ---------------------- WGPR Model Prediction ----------------------
     % Start timing the computation for WGPR
     tic;
-    % Predict test outputs using WGPR (Weighted/Alternative Gaussian Process Regression on sphere)
+    % Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
     WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
     % Store the computation time for this trial
     comparison_time(trial) = toc;
@@ -151,3 +151,4 @@ legend('Location', 'best', 'FontSize', 10);
 
 
 hold off;  % Release the plot (no more elements will be added)
+
