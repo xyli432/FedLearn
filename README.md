@@ -17,7 +17,7 @@ It includes code examples for two common manifolds, with detailed instructions o
 % Clear all variables from the workspace and clear the command window
 clear all;
 % Set the random number generator seed to 1234 for reproducible results
-%rng(1234);
+rng(1234);
 
 % Define the total number of data points (time/space samples) to generate
 N = 100;
@@ -39,15 +39,23 @@ generation_type = "gp"; % function_plus_noise; gp
 theta_params =[0.2,0.5];
 % Standard deviation of Gaussian noise added to the generated output data
 noise_std = 0.1;
-[train_geo, test_geo, train_x, test_x, train_y, test_y, indices] = sphere_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential;random
+
+% Generate geodesic points on the sphere manifold and corresponding input/output data
+% Inputs: sphere manifold object, number of points (N), input covariance (cov_row), 
+%         covariance function (cov_col), hyperparameters (hyp_init), function params (theta_params),
+%         noise level (noise_std), generation type, start point, direction vector
+% Outputs: geodesic_points (points on the sphere's geodesic), x (input features), y (output data)
+[geodesic_points, x, y] = sphere_generate_outputs(sphere_mfd, N, cov_row, cov_col, hyp_init, theta_params, noise_std, generation_type, start_point, dir_vec);
 
 % Optional: Geodesic regression to estimate a prior curve 
 % p_initial = [1; 0; 0]; 
 % v_initial = [0; pi/4; 0]; 
 % lr = 0.1; 
 % iterations = 500; 
-% dim_size = 2;  
+% dim_size = 2;
+
 % [train_geo, test_geo, cost] = sphere_geodesic_regression(sphere_mfd, p_initial, v_initial, train_x, train_y, test_x,lr, iterations, dim_size);
+
 % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on sphere)
 % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
 %         test geodesics, test inputs
@@ -55,6 +63,8 @@ noise_std = 0.1;
 [iGPR_predicted_y,testL]  = sphere_gp_prediction(sphere_mfd, train_geo, train_x, train_y, test_geo, test_x);
 % Calculate geodesic error (distance on sphere) between iGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, iGPR_predicted_y, test_y));
+
+% Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
 WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
 % Calculate geodesic error between WGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, WGPR_predicted_y, test_y));
@@ -87,16 +97,19 @@ cov_col= @covSEiso;
 % Type of data generation: Gaussian Process ('gp') or function plus noise
 generation_type = "gp"; 
 % Standard deviation of noise added to the generated data
-noise_std = 0.1; 
+noise_std = 0.1;
+
 [train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2);
+
 % Geodesic regression to estimate prior curve
 %[~, ~,train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random',0.2);
 %options = struct();
 %options.iterations = 200; 
 %options.lr = 0.5;         
-%options.verbose = true;    
+%options.verbose = true;
 %[train_geo,test_geo,train_costs] = spd_geodesic_regression(train_t, train_y, x, indices.train_idx, indices.test_idx, matD, options);
-% Measure computation time for iGPR prediction
+
+
 % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
 % Inputs: manifold, training geodesics, training inputs, training outputs, 
 %  test geodesics, test inputs
@@ -104,14 +117,11 @@ noise_std = 0.1;
 [predicted_y,~] = spd_gp_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
 % Calculate and store the geodesic error between predictions and true test outputs
 diap(spd_geodesic_error(spd_mfd, predicted_y, test_y));
-% Measure computation time for WGPR prediction
-% Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
+
+% Predict test outputs using WGPR (Wrapped Gaussian Process Regression variant on SPD manifold)
 %[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
-% Store the computation time for this trial
 % Calculate and store the geodesic error for WGPR
 disp(spd_geodesic_error(spd_mfd,comparison_pred, test_y));
-[comparison_pred1] = i_spd_gp_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
-disp( spd_geodesic_error(spd_mfd,comparison_pred1,test_y));
 ```
 
 ## full examples 
