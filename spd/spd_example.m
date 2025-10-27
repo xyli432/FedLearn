@@ -4,22 +4,22 @@ clear all;
 rng(1234);
 
 % Define the number of data points to generate
-N = 20;
+N = 100;
 % Specify the dimension of the SPD matrices (2x2 matrices in this case)
 matD = 2;  
 % Initial SPD matrix (starting point for geodesic generation)
 start_mat = [2, 1; 1, 3];        
 % Direction matrix used to define the geodesic path in SPD manifold
-dir_mat = [4, 6; 6, 5];     
+dir_mat = [4, 2; 2, 5];     
 
 % Create an SPD manifold object of specified dimension
 spd_mfd = spd(matD);                           
 % Parameters for generating the output function (used in data generation)
 theta_params = [0.4, 0.5, 0.3];  
 % Covariance matrix for input parameters (row covariance)
-cov_row = [0.1 0 0;0 1 0;0 0 0.5];
+cov_row = [1 0 0;0 1 0;0 0 1];
 % Initial hyperparameters for the covariance function (log-transformed for optimization stability)
-hyp_init = log([0.2,0.7]); 
+hyp_init = log([0.5,0.25]); 
 % Specify the covariance function (squared exponential isotropic)
 cov_col= @covSEiso;
 % Type of data generation: Gaussian Process ('gp') or function plus noise
@@ -73,18 +73,13 @@ for trial = 1:num_trials
     
     % ---------------------- WGPR Prediction ----------------------
     % Measure computation time for WGPR prediction
-    %tic;
+    tic;
     % Predict test outputs using WGPR (wrapped  Gaussian Process Regression on SPD manifold)
-    %[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
+    [comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
     % Store the computation time for this trial
-    %comparison_time(trial) = toc;
+    comparison_time(trial) = toc;
     % Calculate and store the geodesic error for WGPR
-    %comparison_errors(trial) = spd_geodesic_error(spd_mfd,comparison_pred, test_y);
-
-     tic;
-     [comparison_pred1] = i_spd_gp_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
-     comparison_time(trial) = toc;
-     comparison_errors(trial) = spd_geodesic_error(spd_mfd,comparison_pred1,test_y);
+    comparison_errors(trial) = spd_geodesic_error(spd_mfd,comparison_pred, test_y);
 
     % Print progress update
     fprintf('Completed %d/%d experiments\n', trial, num_trials);
@@ -149,3 +144,4 @@ grid on; grid minor;
 legend('Location', 'best', 'FontSize', 10);  
 
 hold off;  % Release plot
+
