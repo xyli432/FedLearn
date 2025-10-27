@@ -61,7 +61,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Prediction ----------------------
     % Measure computation time for iGPR prediction
     tic;
-    % Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
+    % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
     % Inputs: manifold, training geodesics, training inputs, training outputs, 
     %         test geodesics, test inputs
     % Outputs: predicted test outputs, additional output (unused)
@@ -74,7 +74,7 @@ for trial = 1:num_trials
     % ---------------------- WGPR Prediction ----------------------
     % Measure computation time for WGPR prediction
     %tic;
-    % Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
+    % Predict test outputs using WGPR (wrapped  Gaussian Process Regression on SPD manifold)
     %[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
     % Store the computation time for this trial
     %comparison_time(trial) = toc;
@@ -147,4 +147,5 @@ title('Prediction Error between iGPR and WGPR (SPD)', 'FontSize', 14, 'FontWeigh
 grid on; grid minor; 
 % Add legend in the best possible location
 legend('Location', 'best', 'FontSize', 10);  
+
 hold off;  % Release plot
