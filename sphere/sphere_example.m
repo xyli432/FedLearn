@@ -62,7 +62,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Model Prediction ----------------------
     % Start timing the computation for iGPR
     tic;
-    % Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
+    % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on sphere)
     % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
     %         test geodesics, test inputs
     % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -148,5 +148,6 @@ title('Prediction Error between iGPR and WGPR (sphere)', 'FontSize', 14, 'FontWe
 grid on; grid minor; 
 % Add a legend in the "best" location (automatically chosen to avoid overlapping plot elements)
 legend('Location', 'best', 'FontSize', 10);  
+
 
 hold off;  % Release the plot (no more elements will be added)
