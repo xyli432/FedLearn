@@ -1,6 +1,6 @@
 # iGPR
 iGPR is a MATLAB code implementing the intrinsic Gaussian Process Regression model
-## three baselines
+## two baselines
 
 - iGPR: [intrinsic Gaussian Process Regression on Riemannian Manifolds](https://arxiv.org/abs/2411.18989)
 - WGPR: [Wrapped Gaussian Process Regression on Riemannian Manifolds](https://openaccess.thecvf.com/content_cvpr_2018/html/Mallasto_Wrapped_Gaussian_Process_CVPR_2018_paper.html)
