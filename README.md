@@ -48,9 +48,7 @@ noise_std = 0.1;
 % iterations = 500; 
 % dim_size = 2;  
 % [train_geo, test_geo, cost] = sphere_geodesic_regression(sphere_mfd, p_initial, v_initial, train_x, train_y, test_x,lr, iterations, dim_size);
-
-% ---------------------- iGPR Model Prediction ----------------------
-% Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
+% Predict test outputs using iGPR (intrinsic Gaussian Process Regression on sphere)
 % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
 %         test geodesics, test inputs
 % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -98,17 +96,14 @@ noise_std = 0.1;
 %options.lr = 0.5;         
 %options.verbose = true;    
 %[train_geo,test_geo,train_costs] = spd_geodesic_regression(train_t, train_y, x, indices.train_idx, indices.test_idx, matD, options);
-% ---------------------- iGPR Prediction ----------------------
 % Measure computation time for iGPR prediction
-% Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
+% Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
 % Inputs: manifold, training geodesics, training inputs, training outputs, 
 %  test geodesics, test inputs
 % Outputs: predicted test outputs, additional output (unused)
 [predicted_y,~] = spd_gp_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
 % Calculate and store the geodesic error between predictions and true test outputs
 diap(spd_geodesic_error(spd_mfd, predicted_y, test_y));
-
-% ---------------------- WGPR Prediction ----------------------
 % Measure computation time for WGPR prediction
 % Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
 %[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
