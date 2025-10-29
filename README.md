@@ -36,17 +36,18 @@ generation_type = "gp"; % function_plus_noise; gp
 theta_params =[0.2,0.5];
 % Standard deviation of Gaussian noise added to the generated output data
 noise_std = 0.1;
+
 % Generate geodesic points on the sphere manifold and corresponding input/output data
 % Inputs: sphere manifold object, number of points (N), input covariance (cov_row), 
 %         covariance function (cov_col), hyperparameters (hyp_init), function params (theta_params),
 %         noise level (noise_std), generation type, start point, direction vector
 % Outputs: geodesic_points (points on the sphere's geodesic), x (input features), y (output data)
 [geodesic_points, x, y] = sphere_generate_outputs(sphere_mfd, N, cov_row, cov_col, hyp_init, theta_params, noise_std, generation_type, start_point, dir_vec);
+
 % Split the dataset into training and testing subsets
 % 'random' split: randomly assign 20% of data to test set, 80% to training set;'sequential' split: randomly assign last a% of data to test set, 1-a% to training set
 % Outputs: split geodesic points (train_geo/test_geo), input features (train_x/test_x),
 %          output data (train_y/test_y), and indices of train/test samples
-
 [train_geo, test_geo, train_x, test_x, train_y, test_y, indices] = sphere_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential;random
 
  % Optional: Geodesic regression to estimate a prior curve 
@@ -76,7 +77,7 @@ disp(sphere_geodesic_error(sphere_mfd, WGPR_predicted_y, test_y));
 % Clear all variables from the workspace and clear the command window
 clear all;
 % Set the random number generator seed for reproducibility of results
-rng(1234);
+%rng(1234);
 
 % Define the number of data points to generate
 N = 100;
@@ -86,12 +87,12 @@ matD = 2;
 start_mat = [2, 1; 1, 3];        
 % Direction matrix used to define the geodesic path in SPD manifold
 dir_mat = [4, 2; 2, 5];     
-
 % Create an SPD manifold object of specified dimension
 spd_mfd = spd(matD);                           
 % Parameters for generating the output function (used in data generation)
 theta_params = [0.4, 0.5, 0.3];  
 % Covariance matrix for input parameters (row covariance)
+%cov_row = [1 0.5 0.3;0.5 1 0.5;0.3 0.5 1];
 cov_row = [1 0 0;0 1 0;0 0 1];
 % Initial hyperparameters for the covariance function (log-transformed for optimization stability)
 hyp_init = log([0.5,0.25]); 
@@ -102,28 +103,37 @@ generation_type = "gp";
 % Standard deviation of noise added to the generated data
 noise_std = 0.1;
 
-[train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2);
+% Generate geodesic points and corresponding input/output data on the SPD manifold
+% Inputs: manifold, number of points, matrix dimension, covariance matrices, hyperparameters,
+%         function parameters, start/direction matrices, noise level, generation type
+% Outputs: geodesic points, input variables (x), output variables (y)
+[geodesic_points,x, y] = spd_generate_outputs(spd_mfd, N, matD, cov_row, cov_col, hyp_init, theta_params, start_mat, dir_mat,noise_std, generation_type);
 
+% Split the dataset into training and testing sets
+% 'random' split with 20% of data used for testing; 'sequential' split with a% of data used for testing (the last a% of samples as test set)
+% Returns training/testing geodesic points, input variables (t), output variables (y), and split indices
+[train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential
 % Geodesic regression to estimate prior curve
 %[~, ~,train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random',0.2);
 %options = struct();
 %options.iterations = 200; 
 %options.lr = 0.5;         
-%options.verbose = true;
+%options.verbose = true;    
 %[train_geo,test_geo,train_costs] = spd_geodesic_regression(train_t, train_y, x, indices.train_idx, indices.test_idx, matD, options);
 
-
-% Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
+% ---------------------- iGPR Prediction ----------------------
+% Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
 % Inputs: manifold, training geodesics, training inputs, training outputs, 
-%  test geodesics, test inputs
+%         test geodesics, test inputs
 % Outputs: predicted test outputs, additional output (unused)
 [predicted_y,~] = spd_gp_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
-% Calculate and store the geodesic error between predictions and true test outputs
-diap(spd_geodesic_error(spd_mfd, predicted_y, test_y));
+% Calculatethe geodesic error between predictions and true test outputs
+disp(spd_geodesic_error(spd_mfd, predicted_y, test_y));
 
-% Predict test outputs using WGPR (Wrapped Gaussian Process Regression variant on SPD manifold)
-%[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
-% Calculate and store the geodesic error for WGPR
+% ---------------------- WGPR Prediction ----------------------
+% Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
+[comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
+% Calculate the geodesic error for WGPR
 disp(spd_geodesic_error(spd_mfd,comparison_pred, test_y));
 ```
 
