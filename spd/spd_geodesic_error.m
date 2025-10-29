@@ -28,12 +28,12 @@ function mean_error = spd_geodesic_error(spd_mfd, predicted_y, true_y)
         errors(i) = spd_mfd.dist(pred_mat, true_mat);
         epsilon = 1e-10 ;
         if any(any(abs(imag(errors(i))) > epsilon))
-            errors(i) = real(errors(i));
+            errors(i) = (real(errors(i)))^2;
         else
-            errors(i) = real(errors(i));  
+            errors(i) = (real(errors(i)))^2;  
         end 
     end
     
     % Calculate average geodesic error across all samples (as final evaluation metric)
-    mean_error = mean(errors);  % Average error
+    mean_error = sqrt(mean(errors));  % Average error
 end
