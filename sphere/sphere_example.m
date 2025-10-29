@@ -3,21 +3,21 @@ clear all;
 % Set the random number generator seed to 1234 for reproducible results
 %rng(1234);
 
-% Define the total number of data points (time/space samples) to generate
+% Define the total number of data points to generate
 N = 100;
 % Starting point on the sphere manifold (3D vector, must lie on the sphere)
 start_point = [0; 1; 0];         
 % Direction vector defining the geodesic path on the sphere (3D vector)
 dir_vec = [1/sqrt(3); 0; 1/sqrt(4/3)]; 
-% Create a sphere manifold object to handle sphere-specific operations (e.g., geodesic calculations)
+% Create a sphere manifold object to handle sphere-specific operations 
 sphere_mfd = sphere_manifold();
 % Covariance matrix for input parameters (row covariance) used in data generation
 cov_row = [1 0;0 1];
 % Initial hyperparameters for the covariance function (log-transformed for stable optimization)
 hyp_init = log([1,0.1]); 
-% Specify the covariance function as squared exponential isotropic (handle for the function)
+% Specify the covariance function as squared exponential
 cov_col= @covSEiso;
-% Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise'
+% Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise'(specific functions)
 generation_type = "gp"; % function_plus_noise; gp
 % Parameters controlling the shape of functions (used if generation_type is 'function_plus_noise')
 theta_params =[0.2,0.5];
@@ -62,7 +62,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Model Prediction ----------------------
     % Start timing the computation for iGPR
     tic;
-    % Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
+    % Predict test outputs using iGPR (Intrinsic Gaussian Process Regression on sphere)
     % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
     %         test geodesics, test inputs
     % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -75,7 +75,7 @@ for trial = 1:num_trials
     % ---------------------- WGPR Model Prediction ----------------------
     % Start timing the computation for WGPR
     tic;
-    % Predict test outputs using WGPR (Weighted/Alternative Gaussian Process Regression on sphere)
+    % Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
     WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
     % Store the computation time for this trial
     comparison_time(trial) = toc;
@@ -149,5 +149,6 @@ disp(results_table);
 % legend('Location', 'best', 'FontSize', 10);  
 % 
 % hold off;  % Release the plot (no more elements will be added)
+
 
 
