@@ -8,7 +8,7 @@ iGPR is a MATLAB code implementing the intrinsic Gaussian Process Regression mod
 ## some example commands
 It includes code examples for two common manifolds, with detailed instructions on specific usage provided in the files spd-example.m and sphere-example.m.
 
-- Before conducting the experiment, first add the paths: Run
+- Before experiments, first add the paths: Run
 - [startup.m](https://github.com/xyli432/iGPR/blob/main/gpml-matlab-master/startup.m)  and
 - [add_path.m](https://github.com/xyli432/iGPR/blob/main/gptp_multi_output-master/add_path.m).
 
@@ -16,21 +16,21 @@ It includes code examples for two common manifolds, with detailed instructions o
 ### Sphere manifold
 % Clear all variables from the workspace and clear the command window
 clear all;
-% Define the total number of data points (time/space samples) to generate
+% Define the total number of data points to generate
 N = 100;
 % Starting point on the sphere manifold (3D vector, must lie on the sphere)
 start_point = [0; 1; 0];         
 % Direction vector defining the geodesic path on the sphere (3D vector)
 dir_vec = [1/sqrt(3); 0; 1/sqrt(4/3)]; 
-% Create a sphere manifold object to handle sphere-specific operations (e.g., geodesic calculations)
+% Create a sphere manifold object to handle sphere-specific operations
 sphere_mfd = sphere_manifold();
 % Covariance matrix for input parameters (row covariance) used in data generation
 cov_row = [1 0;0 1];
 % Initial hyperparameters for the covariance function (log-transformed for stable optimization)
 hyp_init = log([1,0.1]); 
-% Specify the covariance function as squared exponential isotropic (handle for the function)
+% Specify the covariance function as squared exponential isotropic 
 cov_col= @covSEiso;
-% Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise'
+% Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise' (specific functions)
 generation_type = "gp"; % function_plus_noise; gp
 % Parameters controlling the shape of functions (used if generation_type is 'function_plus_noise')
 theta_params =[0.2,0.5];
@@ -45,7 +45,7 @@ noise_std = 0.1;
 [geodesic_points, x, y] = sphere_generate_outputs(sphere_mfd, N, cov_row, cov_col, hyp_init, theta_params, noise_std, generation_type, start_point, dir_vec);
 
 % Split the dataset into training and testing subsets
-% 'random' split: randomly assign 20% of data to test set, 80% to training set;'sequential' split: randomly assign last a% of data to test set, 1-a% to training set
+% 'random' split: randomly assign 20% of data to test set, 80% to training set;'sequential' split: randomly assign last 1-a of data to test set, a to training set
 % Outputs: split geodesic points (train_geo/test_geo), input features (train_x/test_x),
 %          output data (train_y/test_y), and indices of train/test samples
 [train_geo, test_geo, train_x, test_x, train_y, test_y, indices] = sphere_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential;random
@@ -59,7 +59,7 @@ noise_std = 0.1;
  % [train_geo, test_geo, cost] = sphere_geodesic_regression(sphere_mfd, p_initial, v_initial, train_x, train_y, test_x,lr, iterations, dim_size);
 
 % ---------------------- iGPR Model Prediction ----------------------
-% Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
+% Predict test outputs using iGPR (Intrinsic Gaussian Process Regression on sphere)
 % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
 %         test geodesics, test inputs
 % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -68,7 +68,7 @@ noise_std = 0.1;
 disp(sphere_geodesic_error(sphere_mfd, iGPR_predicted_y, test_y));
 
 % ---------------------- WGPR Model Prediction ----------------------
-% Predict test outputs using WGPR (Weighted/Alternative Gaussian Process Regression on sphere)
+% Predict test outputs using WGPR (Warpped Gaussian Process Regression on sphere)
 WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
 % Calculate geodesic error between WGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, WGPR_predicted_y, test_y));
@@ -96,7 +96,7 @@ theta_params = [0.4, 0.5, 0.3];
 cov_row = [1 0 0;0 1 0;0 0 1];
 % Initial hyperparameters for the covariance function (log-transformed for optimization stability)
 hyp_init = log([0.5,0.25]); 
-% Specify the covariance function (squared exponential isotropic)
+% Specify the covariance function (squared exponential)
 cov_col= @covSEiso;
 % Type of data generation: Gaussian Process ('gp') or function plus noise
 generation_type = "gp"; 
@@ -122,7 +122,7 @@ noise_std = 0.1;
 %[train_geo,test_geo,train_costs] = spd_geodesic_regression(train_t, train_y, x, indices.train_idx, indices.test_idx, matD, options);
 
 % ---------------------- iGPR Prediction ----------------------
-% Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
+% Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
 % Inputs: manifold, training geodesics, training inputs, training outputs, 
 %         test geodesics, test inputs
 % Outputs: predicted test outputs, additional output (unused)
@@ -131,7 +131,7 @@ noise_std = 0.1;
 disp(spd_geodesic_error(spd_mfd, predicted_y, test_y));
 
 % ---------------------- WGPR Prediction ----------------------
-% Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
+% Predict test outputs using WGPR (Wrapped Gaussian Process Regression variant on SPD manifold)
 [comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
 % Calculate the geodesic error for WGPR
 disp(spd_geodesic_error(spd_mfd,comparison_pred, test_y));
