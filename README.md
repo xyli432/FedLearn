@@ -16,9 +16,6 @@ It includes code examples for two common manifolds, with detailed instructions o
 ### Sphere manifold
 % Clear all variables from the workspace and clear the command window
 clear all;
-% Set the random number generator seed to 1234 for reproducible results
-rng(1234);
-
 % Define the total number of data points (time/space samples) to generate
 N = 100;
 % Starting point on the sphere manifold (3D vector, must lie on the sphere)
@@ -30,7 +27,7 @@ sphere_mfd = sphere_manifold();
 % Covariance matrix for input parameters (row covariance) used in data generation
 cov_row = [1 0;0 1];
 % Initial hyperparameters for the covariance function (log-transformed for stable optimization)
-hyp_init = log([0.5,0.25]); 
+hyp_init = log([1,0.1]); 
 % Specify the covariance function as squared exponential isotropic (handle for the function)
 cov_col= @covSEiso;
 % Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise'
@@ -39,24 +36,29 @@ generation_type = "gp"; % function_plus_noise; gp
 theta_params =[0.2,0.5];
 % Standard deviation of Gaussian noise added to the generated output data
 noise_std = 0.1;
-
 % Generate geodesic points on the sphere manifold and corresponding input/output data
 % Inputs: sphere manifold object, number of points (N), input covariance (cov_row), 
 %         covariance function (cov_col), hyperparameters (hyp_init), function params (theta_params),
 %         noise level (noise_std), generation type, start point, direction vector
 % Outputs: geodesic_points (points on the sphere's geodesic), x (input features), y (output data)
 [geodesic_points, x, y] = sphere_generate_outputs(sphere_mfd, N, cov_row, cov_col, hyp_init, theta_params, noise_std, generation_type, start_point, dir_vec);
+% Split the dataset into training and testing subsets
+% 'random' split: randomly assign 20% of data to test set, 80% to training set;'sequential' split: randomly assign last a% of data to test set, 1-a% to training set
+% Outputs: split geodesic points (train_geo/test_geo), input features (train_x/test_x),
+%          output data (train_y/test_y), and indices of train/test samples
 
-% Optional: Geodesic regression to estimate a prior curve 
-% p_initial = [1; 0; 0]; 
-% v_initial = [0; pi/4; 0]; 
-% lr = 0.1; 
-% iterations = 500; 
-% dim_size = 2;
+[train_geo, test_geo, train_x, test_x, train_y, test_y, indices] = sphere_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential;random
 
-% [train_geo, test_geo, cost] = sphere_geodesic_regression(sphere_mfd, p_initial, v_initial, train_x, train_y, test_x,lr, iterations, dim_size);
+ % Optional: Geodesic regression to estimate a prior curve 
+ % p_initial = [1; 0; 0]; 
+ % v_initial = [0; pi/4; 0]; 
+ % lr = 0.1; 
+ % iterations = 500; 
+ % dim_size = 2;  
+ % [train_geo, test_geo, cost] = sphere_geodesic_regression(sphere_mfd, p_initial, v_initial, train_x, train_y, test_x,lr, iterations, dim_size);
 
-% Predict test outputs using iGPR (intrinsic Gaussian Process Regression on sphere)
+% ---------------------- iGPR Model Prediction ----------------------
+% Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
 % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
 %         test geodesics, test inputs
 % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -64,7 +66,8 @@ noise_std = 0.1;
 % Calculate geodesic error (distance on sphere) between iGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, iGPR_predicted_y, test_y));
 
-% Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
+% ---------------------- WGPR Model Prediction ----------------------
+% Predict test outputs using WGPR (Weighted/Alternative Gaussian Process Regression on sphere)
 WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
 % Calculate geodesic error between WGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, WGPR_predicted_y, test_y));
