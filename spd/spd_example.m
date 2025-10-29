@@ -47,7 +47,7 @@ comparison_time1 = zeros(num_trials, 1);   % (Unused) Times for a potential thir
 % Run multiple trials to evaluate model performance
 for trial = 1:num_trials
     % Split the dataset into training and testing sets
-    % 'random' split with 20% of data used for testing; 'sequential' split with a% of data used for testing (the last a% of samples as test set)
+    % 'random' split with 20% of data used for testing; 'sequential' split with a of data used for testing (the last 1-a of samples as test set)
     % Returns training/testing geodesic points, input variables (t), output variables (y), and split indices
     %[geodesic_points,x, y] = spd_generate_outputs(spd_mfd, N, matD, cov_row, cov_col, hyp_init, theta_params, start_mat, dir_mat,noise_std, generation_type);
     [train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential
@@ -63,7 +63,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Prediction ----------------------
     % Measure computation time for iGPR prediction
     tic;
-    % Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
+    % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
     % Inputs: manifold, training geodesics, training inputs, training outputs, 
     %         test geodesics, test inputs
     % Outputs: predicted test outputs, additional output (unused)
@@ -76,7 +76,7 @@ for trial = 1:num_trials
     % ---------------------- WGPR Prediction ----------------------
     % Measure computation time for WGPR prediction
     tic;
-    % Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
+    % Predict test outputs using WGPR (Wrapped Gaussian Process Regression variant on SPD manifold)
     [comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
     % Store the computation time for this trial
     comparison_time(trial) = toc;
@@ -144,3 +144,4 @@ disp(results_table);
 % % Add legend in the best possible location
 % legend('Location', 'best', 'FontSize', 10);  
 % hold off;  % Release plot
+
