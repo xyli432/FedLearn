@@ -27,10 +27,10 @@ function [mean_error] = sphere_geodesic_error(sphere_mfd, predicted_y, true_y)
         
         % Call dist method of spherical manifold object to calculate geodesic distance between two points
         % Spherical geodesic distance is essentially the "length of great circle minor arc" connecting two points, with unit defined by dist method (typically radians)
-        errors(i) = sphere_mfd.dist(pred_point, true_point);
+        errors(i) = (sphere_mfd.dist(pred_point, true_point))^2;
     end
     
     % -------------------------- Calculate average error --------------------------
     % Take arithmetic mean of errors across all samples to get overall average geodesic error
-    mean_error = mean(errors);
+    mean_error = sqrt(mean(errors));
 end
