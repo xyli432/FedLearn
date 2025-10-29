@@ -14,7 +14,7 @@ sphere_mfd = sphere_manifold();
 % Covariance matrix for input parameters (row covariance) used in data generation
 cov_row = [1 0;0 1];
 % Initial hyperparameters for the covariance function (log-transformed for stable optimization)
-hyp_init = log([0.5,0.25]); 
+hyp_init = log([1,0.1]); 
 % Specify the covariance function as squared exponential isotropic (handle for the function)
 cov_col= @covSEiso;
 % Type of data generation: 'gp' (Gaussian Process) or 'function_plus_noise'
@@ -25,7 +25,7 @@ theta_params =[0.2,0.5];
 noise_std = 0.1;
 
 % Number of independent trials to run (for statistical reliability of results)
-num_trials = 10;
+num_trials = 100;
 % Preallocate arrays to store prediction errors for each model across trials
 gp_errors = zeros(num_trials, 1);          % Errors for iGPR model
 comparison_errors = zeros(num_trials, 1);  % Errors for WGPR model
@@ -62,7 +62,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Model Prediction ----------------------
     % Start timing the computation for iGPR
     tic;
-    % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on sphere)
+    % Predict test outputs using iGPR (Invariant Gaussian Process Regression on sphere)
     % Inputs: sphere manifold, training geodesics, training inputs, training outputs,
     %         test geodesics, test inputs
     % Outputs: iGPR_predicted_y (predicted test outputs), testL (additional output, unused here)
@@ -75,7 +75,7 @@ for trial = 1:num_trials
     % ---------------------- WGPR Model Prediction ----------------------
     % Start timing the computation for WGPR
     tic;
-    % Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
+    % Predict test outputs using WGPR (Weighted/Alternative Gaussian Process Regression on sphere)
     WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
     % Store the computation time for this trial
     comparison_time(trial) = toc;
@@ -114,41 +114,40 @@ results_table = table(means, stds, time_means, time_stds, ...
 % Display the results table in the command window
 disp(results_table);  
 
+% % Create a figure for visualizing prediction error distributions (size: 600x400 pixels)
+% figure('Position', [100, 100, 600, 400]);  
+% % Combine error data of both models into a single matrix for boxplot
+% error_data = [gp_errors, comparison_errors]; 
+% % Generate boxplot to compare error distributions between iGPR and WGPR
+% boxplot(error_data, ...
+%         'Labels', {'iGPR', 'WGPR'}, ...  % X-axis labels (model names)
+%         'Notch', 'on', ...               % Add notches (indicate 95% confidence interval for medians)
+%         'Whisker', 1.5, ...              % Set whisker length to 1.5×Interquartile Range (IQR)
+%         'Symbol', 'o', ...               % Use circles to mark outlier points
+%         'OutlierSize', 6);               % Set size of outlier markers to 6
+% 
+% hold on;  % Keep the current plot active to add additional elements
+% 
+% % Adjust the line width of all boxplot elements (e.g., boxes, whiskers) for better visibility
+% h = findobj(gca, 'Type', 'line');
+% for k = 1:length(h)
+%     set(h(k), 'LineWidth', 1.2);  
+% end
+% 
+% % Plot the mean error of each model as red diamonds (marker size 8, line width 1.5)
+% % Add a display name for the legend
+% plot(1:2, means, 'rd', 'MarkerSize', 8, 'LineWidth', 1.5, 'DisplayName', 'Mean');
+% 
+% % Add axis labels and plot title with bold font and specified size
+% xlabel('Prediction Models', 'FontSize', 12, 'FontWeight', 'bold');
+% ylabel('Mean Geodesic Error', 'FontSize', 12, 'FontWeight', 'bold');
+% title('Prediction Error between iGPR and WGPR (sphere)', 'FontSize', 14, 'FontWeight', 'bold');
+% 
+% % Add grid lines (major and minor) for easier reading of values
+% grid on; grid minor; 
+% % Add a legend in the "best" location (automatically chosen to avoid overlapping plot elements)
+% legend('Location', 'best', 'FontSize', 10);  
+% 
+% hold off;  % Release the plot (no more elements will be added)
 
-% Create a figure for visualizing prediction error distributions (size: 600x400 pixels)
-figure('Position', [100, 100, 600, 400]);  
-% Combine error data of both models into a single matrix for boxplot
-error_data = [gp_errors, comparison_errors]; 
-% Generate boxplot to compare error distributions between iGPR and WGPR
-boxplot(error_data, ...
-        'Labels', {'iGPR', 'WGPR'}, ...  % X-axis labels (model names)
-        'Notch', 'on', ...               % Add notches (indicate 95% confidence interval for medians)
-        'Whisker', 1.5, ...              % Set whisker length to 1.5×Interquartile Range (IQR)
-        'Symbol', 'o', ...               % Use circles to mark outlier points
-        'OutlierSize', 6);               % Set size of outlier markers to 6
-
-hold on;  % Keep the current plot active to add additional elements
-
-% Adjust the line width of all boxplot elements (e.g., boxes, whiskers) for better visibility
-h = findobj(gca, 'Type', 'line');
-for k = 1:length(h)
-    set(h(k), 'LineWidth', 1.2);  
-end
-
-% Plot the mean error of each model as red diamonds (marker size 8, line width 1.5)
-% Add a display name for the legend
-plot(1:2, means, 'rd', 'MarkerSize', 8, 'LineWidth', 1.5, 'DisplayName', 'Mean');
-
-% Add axis labels and plot title with bold font and specified size
-xlabel('Prediction Models', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Mean Geodesic Error', 'FontSize', 12, 'FontWeight', 'bold');
-title('Prediction Error between iGPR and WGPR (sphere)', 'FontSize', 14, 'FontWeight', 'bold');
-
-% Add grid lines (major and minor) for easier reading of values
-grid on; grid minor; 
-% Add a legend in the "best" location (automatically chosen to avoid overlapping plot elements)
-legend('Location', 'best', 'FontSize', 10);  
-
-
-hold off;  % Release the plot (no more elements will be added)
 
