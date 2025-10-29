@@ -1,7 +1,7 @@
 % Clear all variables from the workspace and clear the command window
 clear all;
 % Set the random number generator seed for reproducibility of results
-rng(1234);
+%rng(1234);
 
 % Define the number of data points to generate
 N = 100;
@@ -17,6 +17,7 @@ spd_mfd = spd(matD);
 % Parameters for generating the output function (used in data generation)
 theta_params = [0.4, 0.5, 0.3];  
 % Covariance matrix for input parameters (row covariance)
+%cov_row = [1 0.5 0.3;0.5 1 0.5;0.3 0.5 1];
 cov_row = [1 0 0;0 1 0;0 0 1];
 % Initial hyperparameters for the covariance function (log-transformed for optimization stability)
 hyp_init = log([0.5,0.25]); 
@@ -28,7 +29,7 @@ generation_type = "gp";
 noise_std = 0.1; 
 
 % Number of independent trials to run for statistical robustness
-num_trials = 10;
+num_trials = 100;
 % Preallocate arrays to store errors and computation times for each trial
 gp_errors = zeros(num_trials, 1);          % Errors for the first model (iGPR)
 comparison_errors = zeros(num_trials, 1);  % Errors for the second model (WGPR)
@@ -48,7 +49,8 @@ for trial = 1:num_trials
     % Split the dataset into training and testing sets
     % 'random' split with 20% of data used for testing; 'sequential' split with a% of data used for testing (the last a% of samples as test set)
     % Returns training/testing geodesic points, input variables (t), output variables (y), and split indices
-    [train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2);
+    %[geodesic_points,x, y] = spd_generate_outputs(spd_mfd, N, matD, cov_row, cov_col, hyp_init, theta_params, start_mat, dir_mat,noise_std, generation_type);
+    [train_geo, test_geo, train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random', 0.2); %sequential
 
     % Geodesic regression to estimate prior curve
     %[~, ~,train_t, test_t, train_y, test_y, indices] = spd_split_dataset(geodesic_points, x, y, 'random',0.2);
@@ -61,7 +63,7 @@ for trial = 1:num_trials
     % ---------------------- iGPR Prediction ----------------------
     % Measure computation time for iGPR prediction
     tic;
-    % Predict test outputs using iGPR (intrinsic Gaussian Process Regression on SPD manifold)
+    % Predict test outputs using iGPR (invariant Gaussian Process Regression on SPD manifold)
     % Inputs: manifold, training geodesics, training inputs, training outputs, 
     %         test geodesics, test inputs
     % Outputs: predicted test outputs, additional output (unused)
@@ -74,13 +76,12 @@ for trial = 1:num_trials
     % ---------------------- WGPR Prediction ----------------------
     % Measure computation time for WGPR prediction
     tic;
-    % Predict test outputs using WGPR (wrapped  Gaussian Process Regression on SPD manifold)
+    % Predict test outputs using WGPR (another Gaussian Process Regression variant on SPD manifold)
     [comparison_pred,~] = spd_comparison_prediction(spd_mfd, train_geo, train_t, train_y, test_geo, test_t);
     % Store the computation time for this trial
     comparison_time(trial) = toc;
     % Calculate and store the geodesic error for WGPR
     comparison_errors(trial) = spd_geodesic_error(spd_mfd,comparison_pred, test_y);
-
     % Print progress update
     fprintf('Completed %d/%d experiments\n', trial, num_trials);
 end
@@ -112,36 +113,34 @@ results_table = table(means, stds, time_means, time_stds, ...
 % Display the results table in the command window
 disp(results_table);  
 
-% Create a figure to visualize prediction errors with specified size
-figure('Position', [100, 100, 600, 400]);  
-% Combine error data into a matrix for boxplot
-error_data = [gp_errors, comparison_errors]; 
-% Generate boxplot to compare error distributions between models
-boxplot(error_data, ...
-        'Labels', {'iGPR', 'WGPR'}, ...  % Label x-axis with model names
-        'Notch', 'on', ...               % Add notches to boxes (indicate 95% CI for medians)
-        'Whisker', 1.5, ...              % Set whisker length to 1.5*IQR
-        'Symbol', 'o', ...               % Use circles for outliers
-        'OutlierSize', 6);               % Set size of outlier markers
-hold on;  % Keep plot active to add additional elements
-
-% Adjust line width of boxplot elements for better visibility
-h = findobj(gca, 'Type', 'line');
-for k = 1:length(h)
-    set(h(k), 'LineWidth', 1.2);  
-end
-
-% Plot mean error values as red diamonds for each model
-plot(1:2, means, 'rd', 'MarkerSize', 8, 'LineWidth', 1.5, 'DisplayName', 'Mean');
-
-% Add labels and title with appropriate formatting
-xlabel('Prediction Models', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Mean Geodesic Error', 'FontSize', 12, 'FontWeight', 'bold');
-title('Prediction Error between iGPR and WGPR (SPD)', 'FontSize', 14, 'FontWeight', 'bold');
-% Add grid for better readability
-grid on; grid minor; 
-% Add legend in the best possible location
-legend('Location', 'best', 'FontSize', 10);  
-
-hold off;  % Release plot
-
+% % Create a figure to visualize prediction errors with specified size
+% figure('Position', [100, 100, 600, 400]);  
+% % Combine error data into a matrix for boxplot
+% error_data = [gp_errors, comparison_errors]; 
+% % Generate boxplot to compare error distributions between models
+% boxplot(error_data, ...
+%         'Labels', {'iGPR', 'WGPR'}, ...  % Label x-axis with model names
+%         'Notch', 'on', ...               % Add notches to boxes (indicate 95% CI for medians)
+%         'Whisker', 1.5, ...              % Set whisker length to 1.5*IQR
+%         'Symbol', 'o', ...               % Use circles for outliers
+%         'OutlierSize', 6);               % Set size of outlier markers
+% hold on;  % Keep plot active to add additional elements
+% 
+% % Adjust line width of boxplot elements for better visibility
+% h = findobj(gca, 'Type', 'line');
+% for k = 1:length(h)
+%     set(h(k), 'LineWidth', 1.2);  
+% end
+% 
+% % Plot mean error values as red diamonds for each model
+% plot(1:2, means, 'rd', 'MarkerSize', 8, 'LineWidth', 1.5, 'DisplayName', 'Mean');
+% 
+% % Add labels and title with appropriate formatting
+% xlabel('Prediction Models', 'FontSize', 12, 'FontWeight', 'bold');
+% ylabel('Mean Geodesic Error', 'FontSize', 12, 'FontWeight', 'bold');
+% title('Prediction Error between iGPR and WGPR (SPD)', 'FontSize', 14, 'FontWeight', 'bold');
+% % Add grid for better readability
+% grid on; grid minor; 
+% % Add legend in the best possible location
+% legend('Location', 'best', 'FontSize', 10);  
+% hold off;  % Release plot
