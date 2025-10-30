@@ -68,7 +68,7 @@ noise_std = 0.1;
 disp(sphere_geodesic_error(sphere_mfd, iGPR_predicted_y, test_y));
 
 % ---------------------- WGPR Model Prediction ----------------------
-% Predict test outputs using WGPR (Warpped Gaussian Process Regression on sphere)
+% Predict test outputs using WGPR (Wrapped Gaussian Process Regression on sphere)
 WGPR_predicted_y = sphere_comparison_prediction(sphere_mfd, train_geo,train_x, train_y, test_geo, test_x);
 % Calculate geodesic error between WGPR predictions and true test outputs
 disp(sphere_geodesic_error(sphere_mfd, WGPR_predicted_y, test_y));
